@@ -1,5 +1,6 @@
-
 import 'package:flutter/material.dart';
+import 'package:my_todo/utils/database_helper.dart';
+import 'package:sqflite/sqflite.dart';
 import 'todo_detail.dart';
 import 'package:my_todo/models/todo.dart';
 
@@ -9,36 +10,68 @@ class TodoList extends StatefulWidget {
 }
 
 class _TodoListState extends State<TodoList> {
- // DatabaseHelper databaseHelper = DatabaseHelper();
-  //List<Todo> todoList = List<Todo>();
+  DatabaseHelper databaseHelper = DatabaseHelper();
+  List<Todo> todoList = [];
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    ///updateListView();
-   // print(todoList.length);
+    updateListView();
+    // print(todoList.length);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
       body: getTodosListView(),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          debugPrint('Clicl');
           navigateToDetail(Todo('', '', ''), 'Adicionar');
         },
         tooltip: '+ 1 A fazer',
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
     );
   }
 
   Widget getTodosListView() {
-    return Text(
-      "Fazer"
+    if (todoList.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 30, horizontal: 12),
+        child: Center(
+          child: Column(
+            children: [
+              const Text("Adicione algum item para poder visualizados aqui."),
+              OutlinedButton(
+                onPressed: () {
+                  navigateToDetail(Todo('', '', ''), 'Adicionar');
+                },
+                child: const Text("Adicionar"),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      itemCount: todoList.length,
+      itemBuilder: (context, index) {
+        Todo todo = todoList[index];
+
+        return Card(
+          child: ListTile(
+            leading: const FlutterLogo(size: 72.0),
+            title: Text(todo.title),
+            subtitle: Text(todo.description),
+            isThreeLine: true,
+            onTap: () {
+              navigateToDetail(todo, 'Update');
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -49,9 +82,9 @@ class _TodoListState extends State<TodoList> {
       return title.substring(0, 2);
     }
   }
-/*
+
   void _delete(BuildContext context, Todo todo) async {
-   // int result = await databaseHelper.deleteTodo(todo.id);
+    // int result = await databaseHelper.deleteTodo(todo.id);
     int result = 0;
 
     if (result != 0) {
@@ -59,14 +92,12 @@ class _TodoListState extends State<TodoList> {
       updateListView();
     }
   }
-  */
-
 
   void _showSnackBar(BuildContext context, String message) {
     final snackBar = SnackBar(content: Text(message));
     Scaffold.of(context).showSnackBar(snackBar);
   }
-/*
+
   void updateListView() {
     final Future<Database> dbFuture = databaseHelper.initializeDatabase();
     dbFuture.then((database) {
@@ -77,19 +108,16 @@ class _TodoListState extends State<TodoList> {
         });
       });
     });
-  }*/
+  }
 
   void navigateToDetail(Todo todo, String title) async {
     Navigator.push(context, MaterialPageRoute(builder: (context) {
-      return TodoDetail(todo, title);
       debugPrint("Chamou a segunda tela");
-
-      //return TodoDetail(todo, title);
+      return TodoDetail(todo, title);
     })).then((result) {
       if (result ?? true) {
-    //    updateListView();
+        updateListView();
       }
     });
   }
 }
-

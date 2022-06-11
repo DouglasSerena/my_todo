@@ -8,17 +8,15 @@ class TodoDetail extends StatefulWidget {
   final String appBarTitle;
   final Todo todo;
 
-  TodoDetail(this.todo, this.appBarTitle);
+  const TodoDetail(this.todo, this.appBarTitle);
   @override
   _TodoDetailState createState() {
-    return _TodoDetailState(this.todo, this.appBarTitle);
+    return _TodoDetailState(todo, appBarTitle);
   }
 }
 
 class _TodoDetailState extends State<TodoDetail> {
-
-
-  DatabaseHelper helper= DatabaseHelper();
+  DatabaseHelper helper = DatabaseHelper();
   String appBarTitle;
   Todo todo;
 
@@ -31,23 +29,24 @@ class _TodoDetailState extends State<TodoDetail> {
   Widget build(BuildContext context) {
     TextStyle? textStyle = Theme.of(context).textTheme.bodyText1;
     titleController.text = todo.title;
-    descriptionController.text = todo.desc;
+    descriptionController.text = todo.description;
 
     return Scaffold(
       appBar: AppBar(
         title: Text(appBarTitle),
         leading: IconButton(
-            icon: Icon(Icons.arrow_back),
-            onPressed: () {
-              moveToLastScreen();
-            }),
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            moveToLastScreen();
+          },
+        ),
       ),
       body: Padding(
-        padding: EdgeInsets.only(top: 15.0, left: 10.0, right: 10.0),
+        padding: const EdgeInsets.only(top: 15.0, left: 10.0, right: 10.0),
         child: ListView(
           children: <Widget>[
             Padding(
-              padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+              padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
               child: TextField(
                 controller: titleController,
                 style: textStyle,
@@ -56,16 +55,18 @@ class _TodoDetailState extends State<TodoDetail> {
                   updateTitle();
                 },
                 decoration: InputDecoration(
-                    labelText: 'Titulo',
-                    labelStyle: textStyle,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5.0))),
+                  labelText: 'Titulo',
+                  labelStyle: textStyle,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                ),
               ),
             ),
 
             // 3 elemento
             Padding(
-              padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+              padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
               child: TextField(
                 controller: descriptionController,
                 style: textStyle,
@@ -74,23 +75,25 @@ class _TodoDetailState extends State<TodoDetail> {
                   updateDescription();
                 },
                 decoration: InputDecoration(
-                    labelText: 'Descrição',
-                    labelStyle: textStyle,
-                    border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(5.0))),
+                  labelText: 'Descrição',
+                  labelStyle: textStyle,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(5.0),
+                  ),
+                ),
               ),
             ),
 
             // quart Elemento
             Padding(
-              padding: EdgeInsets.only(top: 15.0, bottom: 15.0),
+              padding: const EdgeInsets.only(top: 15.0, bottom: 15.0),
               child: Row(
                 children: <Widget>[
                   Expanded(
                     child: RaisedButton(
                       color: Theme.of(context).primaryColorDark,
                       textColor: Theme.of(context).primaryColorLight,
-                      child: Text(
+                      child: const Text(
                         'Salvar',
                         textScaleFactor: 1.5,
                       ),
@@ -102,25 +105,29 @@ class _TodoDetailState extends State<TodoDetail> {
                       },
                     ),
                   ),
-                  Container(
-                    width: 5.0,
-                  ),
-                  Expanded(
-                    child: RaisedButton(
-                      color: Theme.of(context).primaryColorDark,
-                      textColor: Theme.of(context).primaryColorLight,
-                      child: Text(
-                        'Apagar',
-                        textScaleFactor: 1.5,
+                  const SizedBox(width: 5.0),
+                  Builder(builder: (context) {
+                    if (todo.id == null) {
+                      return const SizedBox.shrink();
+                    }
+
+                    return Expanded(
+                      child: RaisedButton(
+                        color: Theme.of(context).primaryColorDark,
+                        textColor: Theme.of(context).primaryColorLight,
+                        child: const Text(
+                          'Apagar',
+                          textScaleFactor: 1.5,
+                        ),
+                        onPressed: () {
+                          setState(() {
+                            debugPrint("Apagar clicado");
+                            _delete();
+                          });
+                        },
                       ),
-                      onPressed: () {
-                        setState(() {
-                          debugPrint("Apagar clicado");
-                          _delete();
-                        });
-                      },
-                    ),
-                  ),
+                    );
+                  }),
                 ],
               ),
             ),
@@ -144,22 +151,18 @@ class _TodoDetailState extends State<TodoDetail> {
 
   void _save() async {
     moveToLastScreen();
-
     todo.date = DateFormat.yMMMd().format(DateTime.now());
-    int result=0;
+    int result = 0;
+
     if (todo.id != null) {
-      // Caso 1: Atualizar
-    //  result = await helper.updateTodo(todo);
+      result = await helper.updateTodo(todo);
     } else {
-      // Caso 2: Inserir
-    result = await helper.insertTodo(todo);
+      result = await helper.insertTodo(todo);
     }
 
     if (result != 0) {
-      // Succeso
       _showAlertDialog('Status', 'Salvo com sucesso');
     } else {
-      // deu merda
       _showAlertDialog('Status', 'Eita nóis');
     }
   }
@@ -171,8 +174,7 @@ class _TodoDetailState extends State<TodoDetail> {
       _showAlertDialog('Status', 'Não há nada a deletar');
       return;
     }
-    int result=0;
-    //int result = await helper.deleteTodo(todo.id);
+    int result = await helper.deleteTodo(todo.id!);
     if (result != 0) {
       _showAlertDialog('Status', 'Menos uma coisa a fazer!');
     } else {
